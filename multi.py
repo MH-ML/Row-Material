@@ -1,57 +1,72 @@
 import pickle
+from io import BytesIO
 
 import numpy as np
 import pandas as pd
+import requests
 import streamlit as st
 from scipy.special import expit
 
-# Load the sand model and data
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\sand_model.pkl', 'rb') as file:
-    sand_model = pickle.load(file)
+st.set_page_config(page_title="Raw Materials Searching System", page_icon=":building_construction:")
 
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\sand_X_supplier.pkl', 'rb') as file:
-    sand_X_supplier = pickle.load(file)
+
+# Function to download pickle files from GitHub
+@st.cache_resource
+def download_pickle_from_github(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        return pickle.load(BytesIO(response.content))
+    else:
+        raise Exception(f"Failed to download pickle file from {url}")
+
+# Load the sand model and data
+sand_model_url = 'https://github.com/MH-ML/Row-Material/raw/main/sand_model.pkl'
+sand_model = download_pickle_from_github(sand_model_url)
+
+sand_X_supplier_url = 'https://github.com/MH-ML/Row-Material/raw/main/sand_X_supplier.pkl'
+sand_X_supplier = download_pickle_from_github(sand_X_supplier_url)
 
 # Load the dredging model and data
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\dredging\\dridging_model1.pkl', 'rb') as file:
-    dredging_model = pickle.load(file)
+dredging_model_url = 'https://github.com/MH-ML/Row-Material/raw/main/dridging_model1.pkl'
+dredging_model = download_pickle_from_github(dredging_model_url)
 
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\dredging\\dridging_supplier1.pkl', 'rb') as file:
-    dredging_X_supplier = pickle.load(file)
+dredging_X_supplier_url = 'https://github.com/MH-ML/Row-Material/raw/main/dridging_supplier1.pkl'
+dredging_X_supplier = download_pickle_from_github(dredging_X_supplier_url)
 
 # Load the clay brick model and data
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\clay\\clay_model1.pkl', 'rb') as file:
-    clay_model = pickle.load(file)
+clay_model_url = 'https://github.com/MH-ML/Row-Material/raw/main/clay_model1.pkl'
+clay_model = download_pickle_from_github(clay_model_url)
 
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\clay\\claybrick_supplier.pkl', 'rb') as file:
-    clay_X_supplier = pickle.load(file)
+clay_X_supplier_url = 'https://github.com/MH-ML/Row-Material/raw/main/claybrick_supplier.pkl'
+clay_X_supplier = download_pickle_from_github(clay_X_supplier_url)
 
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\clay\\scaler.pkl', 'rb') as file:
-    scaler = pickle.load(file)
+scaler_url = 'https://github.com/MH-ML/Row-Material/raw/main/scaler_clay.pkl'
+scaler = download_pickle_from_github(scaler_url)
 
 # Load the PPC cement model and data
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\ppc\\ppc_model.pkl', 'rb') as file:
-    ppc_model = pickle.load(file)
+ppc_model_url = 'https://github.com/MH-ML/Row-Material/raw/main/ppc_model.pkl'
+ppc_model = download_pickle_from_github(ppc_model_url)
 
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\ppc\\scaler.pkl', 'rb') as file:
-    ppc_scaler = pickle.load(file)
+ppc_scaler_url = 'https://github.com/MH-ML/Row-Material/raw/main/scaler_ppc.pkl'
+ppc_scaler = download_pickle_from_github(ppc_scaler_url)
 
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\ppc\\poly.pkl', 'rb') as file:
-    ppc_poly = pickle.load(file)
+ppc_poly_url = 'https://github.com/MH-ML/Row-Material/raw/main/poly.pkl'
+ppc_poly = download_pickle_from_github(ppc_poly_url)
 
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\ppc\\ppc_supplier.pkl', 'rb') as file:
-    ppc_X_supplier = pickle.load(file)
-    
-    
-# Load the trained model
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\rod\\rod_model.pkl', 'rb') as file:
-    model = pickle.load(file)
+ppc_X_supplier_url = 'https://github.com/MH-ML/Row-Material/raw/main/ppc_supplier.pkl'
+ppc_X_supplier = download_pickle_from_github(ppc_X_supplier_url)
 
-# Load the supplier data
-with open('F:\\class\\Machine Learning\\project\\civil_wood\\rod\\rod_supplier.pkl', 'rb') as file:
-    X_supplier = pickle.load(file)
+# Load the tmt rod trained model
+model_url = 'https://github.com/MH-ML/Row-Material/raw/main/rod_model.pkl'
+model = download_pickle_from_github(model_url)
+
+# Load the tmt rod supplier data
+X_supplier_url = 'https://github.com/MH-ML/Row-Material/raw/main/rod_supplier.pkl'
+X_supplier = download_pickle_from_github(X_supplier_url)
+
 
 # Sand matching functions
+@st.cache_resource
 def predict_sand_match(buyer_price, buyer_availability, buyer_clay_content, buyer_clay_lump, buyer_fm, num_predictions=4):
     predictions = []
     suppliers = []
@@ -71,6 +86,7 @@ def predict_sand_match(buyer_price, buyer_availability, buyer_clay_content, buye
     return predictions, suppliers
 
 # Dredging sand matching functions
+@st.cache_resource
 def predict_dredging_match(buyer_price, buyer_availability, buyer_fm, num_predictions=4):
     predictions = []
     suppliers = []
@@ -89,6 +105,7 @@ def predict_dredging_match(buyer_price, buyer_availability, buyer_fm, num_predic
     return predictions, suppliers
 
 # Clay brick matching functions
+@st.cache_resource
 def predict_clay_match(buyer_Quality, buyer_price, buyer_availability, num_predictions=4):
     predictions = []
     suppliers = []
@@ -111,6 +128,7 @@ def predict_clay_match(buyer_Quality, buyer_price, buyer_availability, num_predi
     return predictions, suppliers, predicted_classes, predicted_probs
 
 # PPC cement matching functions
+@st.cache_resource
 def predict_ppc_match(buyer_price, buyer_availability, buyer_psi, buyer_pozzolanic_material, buyer_gypsum, buyer_clinker, buyer_slag_fly_ash, buyer_limestone, num_predictions=4):
     predictions = []
     suppliers = []
@@ -139,6 +157,7 @@ def predict_ppc_match(buyer_price, buyer_availability, buyer_psi, buyer_pozzolan
 
     return predictions, suppliers
 
+@st.cache_resource
 def predict_match(buyer_price, buyer_availability, buyer_steel_rod_grade, buyer_yield_strength, buyer_tensile_strength, buyer_elongation, buyer_sulphur, buyer_carbon, buyer_silicon, num_predictions=4):
     predictions = []
     suppliers = []
@@ -161,7 +180,6 @@ def predict_match(buyer_price, buyer_availability, buyer_steel_rod_grade, buyer_
 
 # Streamlit UI
 def main():
-    st.set_page_config(page_title="Raw Materials Searching System", page_icon=":building_construction:")
 
     st.title("Raw Materials Searching System")
 
